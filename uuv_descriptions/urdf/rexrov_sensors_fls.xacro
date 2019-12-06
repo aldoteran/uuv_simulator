@@ -65,21 +65,4 @@
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     inertial_reference_frame="${inertial_reference_frame}" />
-
-  <!-- Mount FLS. -->
-  <xacro:forward_looking_sonar
-      namespace="${namespace}"
-      suffix=""
-      parent_link="${namespace}/base_link"
-      topic="fls_sonar"
-      mass="0.1"
-      update_rate="10"
-      samples="512"
-      fov="1.22173"
-      width="512"
-      height="1024" >
-      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-      <origin xyz="1.3 0 -0.7" rpy="0 0.7853 0" />
-  </xacro:forward_looking_sonar>
-
 </robot>

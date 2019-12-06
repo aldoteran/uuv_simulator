@@ -164,9 +164,7 @@
   </gazebo>
   </xacro:macro>
 
-  <xacro:macro name="forward_looking_sonar"
-    params="namespace suffix parent_link topic mass update_rate
-      samples fov width height *inertia *origin">
+  <xacro:macro name="forward_looking_sonar" params="namespace suffix parent_link topic mass update_rate samples fov width height *inertia *origin">
     <!-- Sensor link -->
     <link name="${namespace}/forward_sonar${suffix}_link">
       <inertial>
