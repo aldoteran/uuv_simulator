@@ -14,7 +14,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Modifications:
  *
  * Copyright 2018 Nils Bore (nbore@kth.se)
@@ -134,6 +134,8 @@ namespace gazebo
     private: void SonarImageDisconnect();
     private: void RawSonarImageConnect();
     private: void RawSonarImageDisconnect();
+    private: void DepthRawSonarImageConnect();
+    private: void DepthRawSonarImageDisconnect();
     private: common::Time last_depth_image_camera_info_update_time_;
 
     private: bool FillPointCloudHelper(sensor_msgs::PointCloud2 &point_cloud_msg,
@@ -151,6 +153,7 @@ namespace gazebo
     private: ros::Publisher multibeam_image_pub_;
     private: ros::Publisher sonar_image_pub_;
     private: ros::Publisher raw_sonar_image_pub_;
+    private: ros::Publisher depth_raw_sonar_image_pub_;
 
     /// \brief PointCloud2 point cloud message
     private: sensor_msgs::PointCloud2 point_cloud_msg_;
@@ -159,6 +162,7 @@ namespace gazebo
     private: sensor_msgs::Image multibeam_image_msg_;
     private: sensor_msgs::Image sonar_image_msg_;
     private: sensor_msgs::Image raw_sonar_image_msg_;
+    private: sensor_msgs::Image depth_raw_sonar_image_msg_;
 
     private: double point_cloud_cutoff_;
 
@@ -184,11 +188,11 @@ namespace gazebo
     protected: ros::Publisher depth_image_camera_info_pub_;
 
     private: event::ConnectionPtr load_connection_;
-    
+
 	// from DepthCameraPlugin
 	protected: unsigned int width, height, depth;
     protected: std::string format;
-		
+
     // precomputed things for the forward-looking sonar
     protected: cv::Mat dist_matrix_;
     std::vector<std::vector<int> > angle_range_indices_;
