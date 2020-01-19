@@ -923,6 +923,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   }
   // No noise for the depths!
   this->ApplyMedianFilter(scan);
+  this->ApplyMedianFilter(scan_depth);
   this->ApplySpeckleNoise(scan, fov);
   //this->ApplySmoothing(scan, fov);
 
