@@ -733,7 +733,8 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
 
   float intensity = 100.; // target strength
   float SL = 200.; // source level
-  float NL = 30; // noise level
+  //float NL = 30; // noise level
+  float NL = 20; // noise level (aldoteran)
   float DI = 0.0; // directivity index
 
   if (dist_matrix_.empty()) {
@@ -765,8 +766,9 @@ cv::Mat GazeboRosImageSonar::ConstructSonarImage(cv::Mat& depth, cv::Mat& normal
   SNR.convertTo(sonar_image8, CV_8UC3, 255.0);
 
   cv_bridge::CvImage img_bridge;
-  //img_bridge = cv_bridge::CvImage(this->multibeam_image_msg_.header, sensor_msgs::image_encodings::MONO8, sonar_image8);
-  img_bridge = cv_bridge::CvImage(this->multibeam_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, SNR);
+  img_bridge = cv_bridge::CvImage(this->multibeam_image_msg_.header, sensor_msgs::image_encodings::MONO8, sonar_image8);
+  // If we want to publishe the SNR image uncomment this instead
+  //img_bridge = cv_bridge::CvImage(this->multibeam_image_msg_.header, sensor_msgs::image_encodings::TYPE_32FC1, SNR);
   img_bridge.toImageMsg(this->multibeam_image_msg_); // from cv_bridge to sensor_msgs::Image
 
   this->multibeam_image_pub_.publish(this->multibeam_image_msg_);
@@ -877,7 +879,8 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   float range = 17.; // TODO: get this from the sensor config instead
 
   float fov = depthCamera->HFOV().Degree();
-  int cols = 2*int(float(rows)*sin(M_PI/180.*fov/2.))+20;
+  int cols = 2*int(float(rows)*sin(M_PI/180.*fov/2.));
+  //int cols = 2*int(float(rows)*sin(M_PI/180.*fov/2.))+20; // for padding? (aldoteran)
 
   cv::Mat scan = cv::Mat::zeros(rows, cols, CV_32FC1);
   //float fov = 180./M_PI*2.*asin(this->cx_/this->focal_length_);
@@ -887,8 +890,10 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   cv::Size third_axes(scan.rows/3, scan.rows/3);
   cv::ellipse(scan, center, third_axes, -90, -fov/2., fov/2., 0, -1);
 
-  // Let's publish the same sonar image but with the info we need
-  cv::Mat scan_depth = scan.clone();
+  // Let's publish the same sonar image but with the info we needi (aldoteran)
+  //int size[] = {rows, cols, 3};
+  //cv::Mat scan_depth = cv::Mat::zeros(3, size, CV_32FC1);
+  cv::Mat scan_depth = cv::Mat::zeros(rows, cols, CV_32FC(3));
 
   float mapped_range = float(scan.rows);
 
@@ -897,7 +902,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
       float d = depth.at<float>(i, j);
 	  //uchar a = SNR.at<uchar>(i, j);
       float a = SNR.at<float>(i, j);
-	  if (d == 0 || a == 0) {
+      if (d == 0 || a == 0) {
 		continue;
       }
 	  float x = (float(j) - this->cx_)/this->focal_length_;
@@ -916,15 +921,18 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 	  int pj = scan.cols/2 + int(x/range*mapped_range);
       if (pi < scan.rows && pi > 0 && pj < scan.cols && pj > 0 && x*x + z*z < range*range) {
 	    scan.at<float>(pi, pj) = a;
-        // We need to know the range of each pixel as in a normal FS sonar
-	    scan_depth.at<float>(pi, pj) = d;
+        // We need to know the range of each pixel as in a normal FS sonar (aldoteran)
+		//scan_depth.at<float>(pi, pj) = d;
+	    scan_depth.at<cv::Vec3f>(pi, pj)[0] = d;
+        scan_depth.at<cv::Vec3f>(pi, pj)[1] = x;
+        scan_depth.at<cv::Vec3f>(pi, pj)[2] = y;
       }
     }
   }
-  // No noise for the depths!
   this->ApplyMedianFilter(scan);
   this->ApplyMedianFilter(scan_depth);
-  this->ApplySpeckleNoise(scan, fov);
+  // No noise for the depths!
+  //this->ApplySpeckleNoise(scan, fov); // (aldoteran)
   //this->ApplySmoothing(scan, fov);
 
   cv_bridge::CvImage img_bridge;
@@ -936,7 +944,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
 
   // Now for the scan image with depths
   img_bridge = cv_bridge::CvImage(this->depth_raw_sonar_image_msg_.header,
-                                  sensor_msgs::image_encodings::TYPE_32FC1,
+                                  sensor_msgs::image_encodings::TYPE_32FC3,
                                   scan_depth);
   img_bridge.toImageMsg(this->depth_raw_sonar_image_msg_);
   this->depth_raw_sonar_image_pub_.publish(this->depth_raw_sonar_image_msg_);
