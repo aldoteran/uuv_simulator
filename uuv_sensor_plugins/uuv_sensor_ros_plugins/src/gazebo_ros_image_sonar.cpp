@@ -935,6 +935,10 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   //this->ApplySpeckleNoise(scan, fov); // (aldoteran)
   //this->ApplySmoothing(scan, fov);
 
+  this->raw_sonar_image_msg_.header.frame_id = this->frame_name_;
+  this->raw_sonar_image_msg_.header.stamp.sec = this->depth_sensor_update_time_.sec;
+  this->raw_sonar_image_msg_.header.stamp.nsec = this->depth_sensor_update_time_.nsec;
+
   cv_bridge::CvImage img_bridge;
   img_bridge = cv_bridge::CvImage(this->raw_sonar_image_msg_.header,
                                   sensor_msgs::image_encodings::TYPE_32FC1,
@@ -942,8 +946,9 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   img_bridge.toImageMsg(this->raw_sonar_image_msg_); // from cv_bridge to sensor_msgs::Image
   this->raw_sonar_image_pub_.publish(this->raw_sonar_image_msg_);
 
+  std::string encoding = "passthrough";
   // Now for the scan image with depths
-  img_bridge = cv_bridge::CvImage(this->depth_raw_sonar_image_msg_.header,
+  img_bridge = cv_bridge::CvImage(this->raw_sonar_image_msg_.header,
                                   sensor_msgs::image_encodings::TYPE_32FC3,
                                   scan_depth);
   img_bridge.toImageMsg(this->depth_raw_sonar_image_msg_);
