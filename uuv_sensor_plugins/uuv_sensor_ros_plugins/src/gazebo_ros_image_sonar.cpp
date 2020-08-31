@@ -932,7 +932,7 @@ cv::Mat GazeboRosImageSonar::ConstructScanImage(cv::Mat& depth, cv::Mat& SNR)
   this->ApplyMedianFilter(scan);
   this->ApplyMedianFilter(scan_depth);
   // No noise for the depths!
-  //this->ApplySpeckleNoise(scan, fov); // (aldoteran)
+  this->ApplySpeckleNoise(scan, fov); // (aldoteran)
   //this->ApplySmoothing(scan, fov);
 
   this->raw_sonar_image_msg_.header.frame_id = this->frame_name_;
